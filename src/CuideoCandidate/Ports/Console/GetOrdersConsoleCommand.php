@@ -4,31 +4,43 @@ declare(strict_types=1);
 
 namespace App\CuideoCandidate\Ports\Console;
 
-use Psr\Log\LoggerInterface;
+use App\CuideoCandidate\Application\Find\ListOrdersQuery;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Messenger\HandleTrait;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 final class GetOrdersConsoleCommand extends Command
 {
-    protected static $defaultName = 'app:sunshine';
-    private $logger;
+    protected static $defaultName = 'cuideo:list:orders';
 
-    public function __construct(LoggerInterface $logger)
+    use HandleTrait;
+
+    public function __construct(MessageBusInterface $messageBus)
     {
-        $this->logger = $logger;
+        $this->messageBus = $messageBus;
         parent::__construct();
     }
 
-    protected function configure()
+    protected function configure(): void
     {
-        $this
-            ->setDescription('Good morning!');
+        $this->setDescription('List BD orders');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $output->write('Waking up the sun' . PHP_EOL);
+        $orders  = $this->handle(
+            new ListOrdersQuery([])
+        );
+        $nOrders = count($orders);
+
+        $output->writeln('+-------------------- Orders ----------+---------+');
+        $output->writeln('| id                                   | name    |');
+        foreach ($orders as $order) {
+            $output->writeln("| {$order->getId()->getValue()} | {$order->getName()} |");
+        }
+        $output->writeln("+--------------- total orders: {$nOrders} ------+---------+");
 
     }
 }

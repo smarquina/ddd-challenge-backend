@@ -40,4 +40,9 @@ abstract class Uuid
             throw new InvalidUuidException("UUID {$this->uuid} not valid");
         }
     }
+
+    public function equals(Uuid $cmpUuid): bool
+    {
+        return $this->getValue() === $cmpUuid->getValue();
+    }
 }
